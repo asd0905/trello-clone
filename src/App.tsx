@@ -24,15 +24,43 @@ const Boards = styled.div`
 
 function App() {
     const [toDos, setToDos] = useRecoilState(toDoState);
-    const onDragEnd = ({ draggableId, destination, source }: DropResult) => {
+    const onDragEnd = (info: DropResult) => {
+        const { destination, source, draggableId } = info;
         if (!destination) return;
-        /* setToDos(oldToDos => {
-            const toDosCopy = [...oldToDos];
-            // 1) Delete item on source.index;
-            toDosCopy.splice(source.index, 1);
-            // 2) Put back the item on the destination.index
-            toDosCopy.splice(destination?.index, 0, draggableId)
-            return toDosCopy;
+        if (destination?.droppableId === source.droppableId) {
+            // same board movement
+            setToDos(allBoards => {
+                const boardCopy = [...allBoards[source.droppableId]];
+                console.log(boardCopy);
+                boardCopy.splice(source.index, 1);
+                boardCopy.splice(destination.index, 0, draggableId);
+                return {
+                    ...allBoards,
+                    [source.droppableId]: boardCopy,
+                };
+            })
+        }
+        if (destination.droppableId !== source.droppableId) {
+            // cross board movement
+            setToDos(allBoards => {
+                const sourceBoard = [...allBoards[source.droppableId]];
+                const destinationBoard = [...allBoards[destination.droppableId]];
+                sourceBoard.splice(source.index, 1);
+                destinationBoard.splice(destination.index, 0, draggableId);
+                return {
+                    ...allBoards,
+                    [source.droppableId]: sourceBoard,
+                    [destination.droppableId]: destinationBoard,
+                };
+            })
+        }
+
+        // short version
+        /* setToDos(oldTodos => {
+            const copyTodo = JSON.parse(JSON.stringify(oldTodos));
+            copyTodo[source.droppableId].splice(source.index, 1);
+            copyTodo[destination.droppableId].splice(destination.index, 0, draggableId);
+            return copyTodo;
         }) */
     }
     return (
