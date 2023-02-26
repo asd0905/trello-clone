@@ -3,7 +3,7 @@ import styled from "styled-components";
 import DraggableCard from "./DraggableCard"
 
 const Wrapper = styled.div`
-    padding: 20px 10px;
+    padding-top: 10px;
     border-radius: 5px;
     background-color: ${(props) => props.theme.boardColor};
     min-height: 200px;
@@ -19,9 +19,14 @@ const Title = styled.h1`
 `;
 
 const Area = styled.div<IAreaProps>`
-    background-color: ${props => props.isDraggingOver ? 'pink' : props.isDraggingFromThisWith ? 'red' : 'blue'};
+    background-color: ${props => props.isDraggingOver
+        ? '#dfe6e9'
+        : props.isDraggingFromThisWith
+            ? '#b2bec3'
+            : 'transparent'};
     flex-grow: 1;
     transition: background-color .3s ease-in-out;
+    padding: 20px;
 `;
 
 interface IAreaProps {
