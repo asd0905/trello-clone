@@ -2,6 +2,9 @@ import { useRef } from "react";
 import { Droppable } from "react-beautiful-dnd"
 import styled from "styled-components";
 import DraggableCard from "./DraggableCard"
+import { useForm } from 'react-hook-form';
+import { ITodo, toDoState } from "../atoms";
+import { useSetRecoilState } from "recoil";
 
 const Wrapper = styled.div`
     padding-top: 10px;
@@ -30,26 +33,54 @@ const Area = styled.div<IAreaProps>`
     padding: 20px;
 `;
 
+const Form = styled.form`
+    width: 100%;
+    input {
+        width: 100%;
+    }
+`;
+
 interface IAreaProps {
     isDraggingFromThisWith: boolean;
     isDraggingOver: boolean;
 }
 
 interface IBoardProps {
-    toDos: string[],
+    toDos: ITodo[],
     boardId: string,
 }
 
+interface IForm {
+    toDo: string;
+}
+
 const Board = ({ toDos, boardId }: IBoardProps) => {
-    const inputRef = useRef<HTMLInputElement>(null);
-    const onClick = () => {
-        inputRef.current?.focus();
+    const setToDos = useSetRecoilState(toDoState);
+    const { register, setValue, handleSubmit } = useForm<IForm>();
+    const onValid = ({ toDo }: IForm) => {
+        console.log(toDo);
+        const newTodo = {
+            id: Date.now(),
+            text: toDo,
+        }
+        setToDos(allBoards => {
+            return {
+                ...allBoards,
+                [boardId]: [...allBoards[boardId], newTodo]
+            }
+        })
+        setValue('toDo', '');
     }
     return (
         <Wrapper>
             <Title>{boardId}</Title>
-            <input ref={inputRef} placeholder="grab me" />
-            <button onClick={onClick}>click me</button>
+            <Form onSubmit={handleSubmit(onValid)}>
+                <input
+                    type='txt'
+                    placeholder={`Add task on ${boardId}`}
+                    {...register('toDo', { required: true })}
+                />
+            </Form>
             <Droppable droppableId={boardId}>
                 {(provided, snapshot) =>
                     <Area
@@ -59,7 +90,12 @@ const Board = ({ toDos, boardId }: IBoardProps) => {
                         {...provided.droppableProps}
                     >
                         {toDos.map((toDo, i) =>
-                            <DraggableCard key={toDo} toDo={toDo} i={i} />
+                            <DraggableCard
+                                key={toDo.id}
+                                toDoText={toDo.text}
+                                toDoId={toDo.id}
+                                i={i}
+                            />
                         )}
                         {provided.placeholder}
                     </Area>
